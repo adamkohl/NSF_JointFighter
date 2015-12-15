@@ -22,10 +22,10 @@ Fuselage_skin_material = 2;
 Type_engine = 2;
 n_engines = 2;
 Mass_payload = 20000;
-Stealth = 0.5;
-design1 = [Type_LG,Tail_material,Type_tail,Spar_material,l_wing,l_chord,...
+% Stealth = 0.5; For government value
+design1 = [Type_LG,Tail_material,Type_tail,Wing_type,Spar_material,l_wing,l_chord,...
     Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,Longeron_material,...
-    n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload,Stealth];
+    n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload];
 
 % Design variables' upper and lower bounds 
 lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 1 2 0];
@@ -33,10 +33,14 @@ ub = [3 2 3 2 2 20 30 3 3 50 2 20 3 20 3 3 6 80000];
 intcon = [1 2 3 4 5 8 9 11 12 13 14 15 16 17];
 nvars = 18;
 
-% Genetic algorithm from matlab optmization toolbox
-[x,fval,exitflag,output,population,score] = ga_aircraft(nvars,lb,ub,intcon)
+% Value output for design alternative
+Aircraft_value = Value_function_3(design1);
 
-% Aircraft_value = Value_function(x);
+
+% Genetic algorithm from matlab optmization toolbox
+%[x,fval,exitflag,output,population,score] = ga_aircraft(nvars,lb,ub,intcon)
+
+
 % % 
 % system_analysis_out = system_analysis(Type_LG,Tail_material, Type_tail,Wing_type,...
 %     Spar_material,l_wing,l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
