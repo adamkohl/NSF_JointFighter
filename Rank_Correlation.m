@@ -36,7 +36,7 @@ for i = 1:n_designs
     % Stealth = design_iter(19); For government value output
 
     % Value output for design alternative
-    Aircraft_value = Value_function_3(design_iter);
+    aircraft_value = Value_function_3(design_iter);
     
     % Generate pdf's for attributes
     for j=1:nvars
@@ -47,6 +47,33 @@ for i = 1:n_designs
     pdfs_design(i).graphimplem = vars_pdf;
     pdfs_design(i).monteselect = pd;
 
+    % Begin Monte Carlo Simulation
+    for k = 1:100
+        Type_LG = round(random(pdfs_design(i).monteselect(1,1),1));
+        Tail_material = round(random(pdfs_design(i).monteselect(1,2),1));
+        Type_tail = round(random(pdfs_design(i).monteselect(1,3),1));
+        Wing_type = round(random(pdfs_design(i).monteselect(1,4),1));
+        Spar_material = round(random(pdfs_design(i).monteselect(1,5),1));
+        l_wing = random(pdfs_design(i).monteselect(1,6),1);
+        l_chord = random(pdfs_design(i).monteselect(1,7),1);
+        Rib_material = round(random(pdfs_design(i).monteselect(1,8),1));
+        Skin_material = round(random(pdfs_design(i).monteselect(1,9),1));
+        L_fuselage = random(pdfs_design(i).monteselect(1,10),1);
+        Frame_material = round(random(pdfs_design(i).monteselect(1,11),1));
+        n_frames = random(pdfs_design(i).monteselect(1,12),1);
+        Longeron_material = round(random(pdfs_design(i).monteselect(1,13),1));
+        n_longerons = random(pdfs_design(i).monteselect(1,14),1);
+        Fuselage_skin_material = round(random(pdfs_design(i).monteselect(1,15),1));
+        Type_engine = round(random(pdfs_design(i).monteselect(1,16),1));
+        n_engines = random(pdfs_design(i).monteselect(1,17),1);
+        Mass_payload = random(pdfs_design(i).monteselect(1,18),1);
+        
+        util_design(k,:) = [Type_LG,Tail_material,Type_tail,Wing_type,Spar_material,l_wing,...
+            l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
+            Longeron_material,n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload];
+
+        util_aircraft_value = Value_function_3(util_design(k,:));
+    end
     
 end
 
