@@ -3,6 +3,7 @@
 clc;clear;
 format longEng
 
+% Design alternative for testing
 Type_LG = 1;
 Tail_material = 1;
 Type_tail =2;
@@ -22,17 +23,17 @@ Type_engine = 2;
 n_engines = 2;
 Mass_payload = 20000;
 Stealth = 0.5;
+design1 = [Type_LG,Tail_material,Type_tail,Spar_material,l_wing,l_chord,...
+    Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,Longeron_material,...
+    n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload,Stealth];
 
-% Design variables upper and lower bounds 
+% Design variables' upper and lower bounds 
 lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 1 2 0];
 ub = [3 2 3 2 2 20 30 3 3 50 2 20 3 20 3 3 6 80000];
 intcon = [1 2 3 4 5 8 9 11 12 13 14 15 16 17];
 nvars = 18;
 
-% Design alternative for testing
-x_da = [2.0 1.5 2.0 1.75 1.25 12.5 17.5 2.5 2.75 38.0...
-    1.0 8.75 1.5 19.5 1.0 3.0 5.25 46000.0];
-
+% Genetic algorithm from matlab optmization toolbox
 [x,fval,exitflag,output,population,score] = ga_aircraft(nvars,lb,ub,intcon)
 
 % Aircraft_value = Value_function(x);
