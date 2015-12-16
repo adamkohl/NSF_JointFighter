@@ -3,9 +3,9 @@
 clc;clear;
 format longEng
 % Design alternative for testing
-design_1 = [1 1 2 1 2 20 12 2 1 25 2 4 3 12 2 2 2 20000];
-design_tot = design_1;
-[n_designs,~] = size(design_tot);
+design_alt_1 = [1 1 2 1 2 20 12 2 1 25 2 4 3 12 2 2 2 20000];
+design_alt_tot = design_alt_1;
+[n_designs,~] = size(design_alt_tot);
 
 % Design attributes' upper and lower bounds 
 lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 1 2 0];
@@ -23,9 +23,24 @@ for iter=1:numlines
     Legend{iter}=strcat('Design ', num2str(iter));
 end
 
+% Utility Parameters
+a1 = 0.00000009;
+a2 = 0.00000001;
+a3 = 0;
+a4 = -0.000000005;
+a5 = -0.00000009;
+R1 = 10*10^6;
+R2 = -10*10^6;
+b1 = 350*10^6;
+alpha = 5;
+alpha1 = -0.01;
+alpha2 = alpha1+0.1;
+alpha3 = alpha2+0.1;
+alpha4 = alpha3+0.1;
+
 % Start iterating through all alternate designs
 for i = 1:n_designs
-    design_iter = design_tot(i,:);
+    design_iter = design_alt_tot(i,:);
     [~,nvars] = size(design_iter);
 
     % Value output for design alternative
@@ -40,9 +55,9 @@ for i = 1:n_designs
     design(i).graphpdf = vars_pdf;
     design(i).graphdist = dx;
     design(i).monteselect = pd;
-
+    
     % Begin Monte Carlo Simulation
-    for k = 1:100
+    for k = 1:3
         Type_LG = round(random(design(i).monteselect(1,1),1));
         Tail_material = round(random(design(i).monteselect(1,2),1));
         Type_tail = round(random(design(i).monteselect(1,3),1));
@@ -62,13 +77,26 @@ for i = 1:n_designs
         n_engines = random(design(i).monteselect(1,17),1);
         Mass_payload = random(design(i).monteselect(1,18),1);
         
-        util_design(k,:) = [Type_LG,Tail_material,Type_tail,Wing_type,Spar_material,l_wing,...
+        util_inputs(k,:) = [Type_LG,Tail_material,Type_tail,Wing_type,Spar_material,l_wing,...
             l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
             Longeron_material,n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload];
 
-        util_aircraft_value(i,k) = Value_function_3(util_design(k,:));
+        util_aircraft_value(i,k) = Value_function_3(util_inputs(k,:));
+        
+        U1(i,k) = -(1/a1)*exp(-a1*util_aircraft_value(i,k));
+        U2(i,k) = -(1/a2)*exp(-a2*util_aircraft_value(i,k));
+        U3(i,k) = util_aircraft_value(i,k).^(1/8);
+        U4(i,k) = (1-exp(-util_aircraft_value(i,k)-a3)./R1)/(1-exp(-(b1-a3)./R1));
+        U5(i,k) = (1-exp(-(util_aircraft_value(i,k)-a3)./R2))/(1-exp(-(b1-a3)./R2));
+        U6(i,k) = (1/alpha)*util_aircraft_value(i,k).^alpha;
     end
-    
+    design(i).aircraft_value = util_aircraft_value;
+    design(i).util1 = U1;
+    design(i).util2 = U2;
+    design(i).util3 = U3;
+    design(i).util4 = U4;
+    design(i).util1 = U5;
+    design(i).util6 = U6;
 end
 
 % Graph attribute pdfs
