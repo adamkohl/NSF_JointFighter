@@ -11,29 +11,22 @@ design_tot = design_1;
 lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 1 2 0];
 ub = [3 2 3 2 2 20 30 3 3 50 2 20 3 20 3 3 6 80000];
 intcon = [1 2 3 4 5 8 9 11 12 13 14 15 16 17];
-    
+
+%Preallocate graph information
+CM = jet(n_designs);
+color_index = 1;
+numlines = n_designs;
+lins = {'-','--',':','-.'};
+linespec = {'b','m','c','r','g',[1 .6 0],'k'};
+Legend = cell(numlines,1);
+for iter=1:numlines
+    Legend{iter}=strcat('Design ', num2str(iter));
+end
+
+% Start iterating through all alternate designs
 for i = 1:n_designs
     design_iter = design_tot(i,:);
     [~,nvars] = size(design_iter);
-%     Type_LG = design_iter(1);
-%     Tail_material = design_iter(2);
-%     Type_tail = design_iter(3);
-%     Wing_type = design_iter(4);
-%     Spar_material = design_iter(5);
-%     l_wing = design_iter(6);
-%     l_chord = design_iter(7);
-%     Rib_material = design_iter(8);
-%     Skin_material = design_iter(9);
-%     L_fuselage = design_iter(10);
-%     Frame_material = design_iter(11);
-%     n_frames = design_iter(12);
-%     Longeron_material = design_iter(13);
-%     n_longerons = design_iter(14);
-%     Fuselage_skin_material = design_iter(15);
-%     Type_engine = design_iter(16);
-%     n_engines = design_iter(17);
-%     Mass_payload = design_iter(18);
-    % Stealth = design_iter(19); For government value output
 
     % Value output for design alternative
     aircraft_value = Value_function_3(design_iter);
@@ -44,37 +37,88 @@ for i = 1:n_designs
         pd(j) = makedist('Tri',lb(j),design_iter(j),ub(j));
         vars_pdf(j,:) = pdf(pd(1,j),dx(j,:));
     end
-    pdfs_design(i).graphimplem = vars_pdf;
-    pdfs_design(i).monteselect = pd;
+    design(i).graphpdf = vars_pdf;
+    design(i).graphdist = dx;
+    design(i).monteselect = pd;
 
     % Begin Monte Carlo Simulation
     for k = 1:100
-        Type_LG = round(random(pdfs_design(i).monteselect(1,1),1));
-        Tail_material = round(random(pdfs_design(i).monteselect(1,2),1));
-        Type_tail = round(random(pdfs_design(i).monteselect(1,3),1));
-        Wing_type = round(random(pdfs_design(i).monteselect(1,4),1));
-        Spar_material = round(random(pdfs_design(i).monteselect(1,5),1));
-        l_wing = random(pdfs_design(i).monteselect(1,6),1);
-        l_chord = random(pdfs_design(i).monteselect(1,7),1);
-        Rib_material = round(random(pdfs_design(i).monteselect(1,8),1));
-        Skin_material = round(random(pdfs_design(i).monteselect(1,9),1));
-        L_fuselage = random(pdfs_design(i).monteselect(1,10),1);
-        Frame_material = round(random(pdfs_design(i).monteselect(1,11),1));
-        n_frames = random(pdfs_design(i).monteselect(1,12),1);
-        Longeron_material = round(random(pdfs_design(i).monteselect(1,13),1));
-        n_longerons = random(pdfs_design(i).monteselect(1,14),1);
-        Fuselage_skin_material = round(random(pdfs_design(i).monteselect(1,15),1));
-        Type_engine = round(random(pdfs_design(i).monteselect(1,16),1));
-        n_engines = random(pdfs_design(i).monteselect(1,17),1);
-        Mass_payload = random(pdfs_design(i).monteselect(1,18),1);
+        Type_LG = round(random(design(i).monteselect(1,1),1));
+        Tail_material = round(random(design(i).monteselect(1,2),1));
+        Type_tail = round(random(design(i).monteselect(1,3),1));
+        Wing_type = round(random(design(i).monteselect(1,4),1));
+        Spar_material = round(random(design(i).monteselect(1,5),1));
+        l_wing = random(design(i).monteselect(1,6),1);
+        l_chord = random(design(i).monteselect(1,7),1);
+        Rib_material = round(random(design(i).monteselect(1,8),1));
+        Skin_material = round(random(design(i).monteselect(1,9),1));
+        L_fuselage = random(design(i).monteselect(1,10),1);
+        Frame_material = round(random(design(i).monteselect(1,11),1));
+        n_frames = random(design(i).monteselect(1,12),1);
+        Longeron_material = round(random(design(i).monteselect(1,13),1));
+        n_longerons = random(design(i).monteselect(1,14),1);
+        Fuselage_skin_material = round(random(design(i).monteselect(1,15),1));
+        Type_engine = round(random(design(i).monteselect(1,16),1));
+        n_engines = random(design(i).monteselect(1,17),1);
+        Mass_payload = random(design(i).monteselect(1,18),1);
         
         util_design(k,:) = [Type_LG,Tail_material,Type_tail,Wing_type,Spar_material,l_wing,...
             l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
             Longeron_material,n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload];
 
-        util_aircraft_value = Value_function_3(util_design(k,:));
+        util_aircraft_value(i,k) = Value_function_3(util_design(k,:));
     end
     
+end
+
+% Graph attribute pdfs
+for z = 1:nvars
+    figure(z)
+    for i = 1:1
+        switch z
+            case 1
+                title(sprintf('Type LG'));
+            case 2
+                title(sprintf('Tail Material'));
+            case 3
+                title(sprintf('Type Tail'));
+            case 4 
+                title(sprintf('Wing Type'));
+            case 5
+                title(sprintf('Spar Material'));
+            case 6
+                title(sprintf('L Wing'));
+            case 7
+                title(sprintf('L Chord'));
+            case 8
+                title(sprintf('Rib Material'));
+            case 9
+                title(sprintf('Skin Material'));
+            case 10
+                title(sprintf('L Fuselage'));
+            case 11
+                title(sprintf('Frame Material'));
+            case 12
+                title(sprintf('N Frames'));
+            case 13
+                title(sprintf('Longeron Material'));
+            case 14
+                title(sprintf('N Longerons'));
+            case 15
+                title(sprintf('Fuselage Skin Material'));
+            case 16
+                title(sprintf('Type Engine'));
+            case 17
+                title(sprintf('N Engines'));  
+            otherwise
+                title(sprintf('Mass Payload'));
+        end
+        hold on;
+        plot(design(i).graphdist(z,:),design(i).graphpdf(z,:),'color',linespec{i},'linestyle',lins{i},'LineWidth',2.5)
+        hold on;
+        color_index = color_index+1;
+        legend(Legend);
+    end
 end
 
 % Genetic algorithm from matlab optmization toolbox
