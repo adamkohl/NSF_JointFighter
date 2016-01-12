@@ -8,7 +8,7 @@ design_alt_tot = design_alt_1;
 [n_designs,~] = size(design_alt_tot);
 
 % Design attributes' upper and lower bounds 
-lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 1 2 0];
+lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 2 2 0];
 ub = [3 2 3 2 2 20 30 3 3 50 2 20 3 20 3 3 6 80000];
 intcon = [1 2 3 4 5 8 9 11 12 13 14 15 16 17];
 
@@ -57,7 +57,7 @@ for i = 1:n_designs
     design(i).monteselect = pd;
     
     % Begin Monte Carlo Simulation
-    for k = 1:3
+    for k = 1:100
         Type_LG = round(random(design(i).monteselect(1,1),1));
         Tail_material = round(random(design(i).monteselect(1,2),1));
         Type_tail = round(random(design(i).monteselect(1,3),1));
@@ -74,7 +74,7 @@ for i = 1:n_designs
         n_longerons = random(design(i).monteselect(1,14),1);
         Fuselage_skin_material = round(random(design(i).monteselect(1,15),1));
         Type_engine = round(random(design(i).monteselect(1,16),1));
-        n_engines = random(design(i).monteselect(1,17),1);
+        n_engines = round(random(design(i).monteselect(1,17),1));
         Mass_payload = random(design(i).monteselect(1,18),1);
         
         util_inputs(k,:) = [Type_LG,Tail_material,Type_tail,Wing_type,Spar_material,l_wing,...
@@ -95,8 +95,15 @@ for i = 1:n_designs
     design(i).util2 = U2;
     design(i).util3 = U3;
     design(i).util4 = U4;
-    design(i).util1 = U5;
+    design(i).util5 = U5;
     design(i).util6 = U6;
+    design(i).aircraft_valueavg = mean(util_aircraft_value);
+    design(i).util1avg = mean(U1);
+    design(i).util2avg = mean(U2);
+    design(i).util3avg = mean(U3);
+    design(i).util4avg = mean(U4);
+    design(i).util5avg = mean(U5);
+    design(i).util6avg = mean(U6);
 end
 
 % Graph attribute pdfs
@@ -149,57 +156,19 @@ for z = 1:nvars
     end
 end
 
-% Genetic algorithm from matlab optmization toolbox
-%[x,fval,exitflag,output,population,score] = ga_aircraft(nvars,lb,ub,intcon)
+filename = 'Joint_Fighter_Results.txt';
+for i = 1:n_designs
+    aircraft_valavg_out(i,1) = design(i).aircraft_valueavg;
+    utility_1_out(i,1) = design(i).util1avg;
+    utility_2_out(i,1) = design(i).util2avg;
+    utility_3_out(i,1) = design(i).util3avg;
+    utility_4_out(i,1) = design(i).util4avg;
+    utility_5_out(i,1) = design(i).util5avg;
+    utility_6_out(i,1) = design(i).util6avg; 
+end
 
-
-% % 
-% system_analysis_out = system_analysis(Type_LG,Tail_material, Type_tail,Wing_type,...
-%     Spar_material,l_wing,l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
-%     Longeron_material,n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload)
-
-
-% Aircraft_value = Value_function(Type_LG,Tail_material, Type_tail,Wing_type,...
-%     Spar_material,l_wing,l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
-%     Longeron_material,n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload)
-
-% L_fuselage = 20;
-% Frame_material = 1;
-% n_frames = 5;
-% Longeron_material = 1;
-% n_longerons = 5;
-% Fuselage_skin_material = 1;
-% Mass_wing = 5000;
-% Mass_tail = 1000;
-% Mass_landing_gear = 2000;
-% Mass_engine = 10000;
-% Mass_payload = 2000;
-% 
-% 
-%  Fuselage_SSL1_out = Fuselage_SSL1(L_fuselage,Frame_material,n_frames,...
-%     Longeron_material,n_longerons,Fuselage_skin_material,...
-%     Mass_wing, Mass_tail, Mass_landing_gear,Mass_engine,Mass_payload)
-
-
-
-% Tail_material = 1;
-% Type_tail = 1;
-% Tail_SL1_out = Tail_SL1(Tail_material, Type_tail)
-
-% Type_LG = 2;
-% Mass_return = 10000;
-% LandingGear_SL1_out = LandingGear_SL1(Type_LG,Mass_return)
-
-% Type_engine = 1;
-% n_engines = 2;
-% Mass_wing = 1000;
-% Mass_fuselage = 5000;
-% Mass_landinggear = 1000;
-% Mass_tail = 500;
-% S_wing = 25; 
-% Mass_payload = 10000;
-% 
-% 
-% 
-% Engine_SL1_output = Engine_SL1(Type_engine,n_engines,Mass_wing,Mass_fuselage,Mass_landinggear,...
-%                             Mass_tail, Mass_payload,S_wing)
+T = table(aircraft_valavg_out(:,1),utility_1_out(:,1),utility_2_out(:,1),utility_3_out(:,1),...
+    utility_4_out(:,1),utility_5_out(:,1),utility_6_out(:,1));
+T.Properties.VariableNames = {'Aircraft_Value' 'Utility_1' 'Utility_2' 'Utility_3'...
+    'Utility_4' 'Utility_5' 'Utility_6'};
+writetable(T,filename,'Delimiter',' '); 
