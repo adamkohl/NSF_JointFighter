@@ -25,20 +25,14 @@ for iter=1:numlines
 end
 
 % Utility Parameters
+a = -0.275e-5;
 a1 = 0.00000009;
 a2 = 0.00000001;
 a3 = 0;
 a4 = -0.000000005;
 a5 = -0.00000009;
-R1 = 10*10^6;
-R2 = -10*10^6;
-b1 = 350*10^6;
-alpha = 5;
-alpha1 = -0.01;
-alpha2 = alpha1+0.1;
-alpha3 = alpha2+0.1;
-alpha4 = alpha3+0.1;
 
+no_samples = 100;
 % Start iterating through all alternate designs
 for i = 1:n_designs
     design_iter = design_alt_tot(i,:);
@@ -70,7 +64,7 @@ for i = 1:n_designs
     design(i).monteselect = pd;
     
     % Begin Monte Carlo Simulation
-    for k = 1:100
+    for k = 1:no_samples
         Type_LG = round(random(design(i).monteselect(1,1),1));
         Tail_material = round(random(design(i).monteselect(1,2),1));
         Type_tail = round(random(design(i).monteselect(1,3),1));
@@ -94,29 +88,31 @@ for i = 1:n_designs
             l_chord,Rib_material,Skin_material,L_fuselage,Frame_material,n_frames,...
             Longeron_material,n_longerons,Fuselage_skin_material,Type_engine,n_engines,Mass_payload];
 
-        util_aircraft_value(i,k) = Value_function_3(util_inputs(k,:));
+        util_aircraft_value(i,k) = -1*Value_function_3(util_inputs(k,:));
         
-        U1(i,k) = -(1/a1)*exp(-a1*util_aircraft_value(i,k));
-        U2(i,k) = -(1/a2)*exp(-a2*util_aircraft_value(i,k));
-        U3(i,k) = util_aircraft_value(i,k).^(1/8);
-        U4(i,k) = (1-exp(-util_aircraft_value(i,k)-a3)./R1)/(1-exp(-(b1-a3)./R1));
-        U5(i,k) = (1-exp(-(util_aircraft_value(i,k)-a3)./R2))/(1-exp(-(b1-a3)./R2));
-        U6(i,k) = (1/alpha)*util_aircraft_value(i,k).^alpha;
+        U1(i,k) = -(1/a1)*exp(-a1*util_aircraft_value(i,k)); % nEGATIVE eXPONENTIAL uTILITY fUNCTION
+        U2(i,k) = -(1/a2)*exp(-a2*util_aircraft_value(i,k));  
+        U3(i,k) = -(1/a3)*exp(-a3*util_aircraft_value(i,k)); % nEGATIVE eXPONENTIAL uTILITY fUNCTION
+        U4(i,k) = -(1/a4)*exp(-a4*util_aircraft_value(i,k));
+        U5(i,k) = -(1/a5)*exp(-a5*util_aircraft_value(i,k)); % nEGATIVE eXPONENTIAL uTILITY fUNCTION
+        U6(i,k) = -(1/a)*exp(-a*-1*util_aircraft_value(i,k)); 
     end
     design(i).aircraft_value = util_aircraft_value;
-    design(i).util1 = U1;
-    design(i).util2 = U2;
-    design(i).util3 = U3;
-    design(i).util4 = U4;
-    design(i).util5 = U5;
-    design(i).util6 = U6;
     design(i).aircraft_valueavg = mean(util_aircraft_value);
-    design(i).util1avg = mean(U1);
-    design(i).util2avg = mean(U2);
-    design(i).util3avg = mean(U3);
-    design(i).util4avg = mean(U4);
-    design(i).util5avg = mean(U5);
-    design(i).util6avg = mean(U6);
+    
+    % Utility_Exp_outcome 
+    [n_ut1(i,:),xout_ut1(i,:)] = hist(U1(i,:),no_samples);
+    design(i).util1avg = sum(xout_ut1(i,:).*n_ut1(i,:))/length(U1(i,:));
+    [n_ut2(i,:),xout_ut2(i,:)] = hist(U2(i,:),no_samples);
+    design(i).util2avg = sum(xout_ut2(i,:).*n_ut2(i,:))/length(U2(i,:));
+    [n_ut3(i,:),xout_ut3(i,:)] = hist(U3(i,:),no_samples);
+    design(i).util3avg = sum(xout_ut3(i,:).*n_ut3(i,:))/length(U3(i,:));
+    [n_ut4(i,:),xout_ut4(i,:)] = hist(U4(i,:),no_samples);
+    design(i).util4avg = sum(xout_ut4(i,:).*n_ut4(i,:))/length(U4(i,:));
+    [n_ut5(i,:),xout_ut5(i,:)] = hist(U5(i,:),no_samples);
+    design(i).util5avg = sum(xout_ut5(i,:).*n_ut5(i,:))/length(U5(i,:));
+    [n_ut6(i,:),xout_ut6(i,:)] = hist(U6(i,:),no_samples);
+    design(i).util6avg = sum(xout_ut6(i,:).*n_ut6(i,:))/length(U6(i,:));
 end
 
 % Graph attribute pdfs
@@ -169,6 +165,7 @@ for z = 1:nvars
     end
 end
 
+% Output all results in an orderly fashion
 filename = sprintf('Joint_Fighter_Results_%s.txt', datestr(now));
 for i = 1:n_designs
     aircraft_valavg_out(i,1) = design(i).aircraft_valueavg;
