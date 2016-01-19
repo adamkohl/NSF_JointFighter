@@ -48,10 +48,22 @@ for i = 1:n_designs
     aircraft_value = Value_function_3(design_iter);
     
     % Generate pdf's for attributes
-    for j=1:nvars
-        dx(j,:) = [lb(j):(ub(j)-lb(j))/1000:ub(j)];
-        pd(j) = makedist('Tri',lb(j),design_iter(j),ub(j));
-        vars_pdf(j,:) = pdf(pd(1,j),dx(j,:));
+    skew_mag(1:18) = 1.25;
+    skew = true;
+    var_variant(1:18) = 0.5;
+   for j=1:nvars
+       lb(j) = design_iter(j)-var_variant(j);
+       ub(j) = design_iter(j)+var_variant(j);
+        if skew == true
+            dx(j,:) = [lb(j):(ub(j)-lb(j))/1000:ub(j)];
+            skew_var = lb(j) + (design_iter(j)-lb(j))*skew_mag(j);
+            pd(j) = makedist('Tri',lb(j),skew_var,ub(j));
+            vars_pdf(j,:) = pdf(pd(1,j),dx(j,:));
+        else
+            dx(j,:) = [lb(j):(ub(j)-lb(j))/1000:ub(j)];
+            pd(j) = makedist('Tri',lb(j),design_iter(j),ub(j));
+            vars_pdf(j,:) = pdf(pd(1,j),dx(j,:));
+        end
     end
     design(i).graphpdf = vars_pdf;
     design(i).graphdist = dx;
