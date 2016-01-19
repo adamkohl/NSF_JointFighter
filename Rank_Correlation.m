@@ -3,13 +3,14 @@
 clc;clear;
 format longEng
 % Design alternative for testing
-design_alt_1 = [1 1 2 1 2 20 12 2 1 25 2 4 3 12 2 2 2 20000];
+design_alt_1 = [2.0 2.0 3.0 2.0 2.0 15.05 6.545 1.0 2.0 66.21...
+    1.0 14.0 3.0 15.0 2.0 2.0 4.0 90049.799];
 design_alt_tot = design_alt_1;
 [n_designs,~] = size(design_alt_tot);
 
 % Design attributes' upper and lower bounds 
 lb = [1 1 1 1 1 10 1 1 1 1 1 2 1 2 1 2 2 0];
-ub = [3 2 3 2 2 20 30 3 3 50 2 20 3 20 3 3 6 80000];
+ub = [3 2 3 2 2 20 30 3 3 70 2 20 3 20 3 3 6 100000];
 intcon = [1 2 3 4 5 8 9 11 12 13 14 15 16 17];
 
 %Preallocate graph information
@@ -156,7 +157,7 @@ for z = 1:nvars
     end
 end
 
-filename = 'Joint_Fighter_Results.txt';
+filename = sprintf('Joint_Fighter_Results_%s.txt', datestr(now));
 for i = 1:n_designs
     aircraft_valavg_out(i,1) = design(i).aircraft_valueavg;
     utility_1_out(i,1) = design(i).util1avg;
